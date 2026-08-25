@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
+from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
 
 from src.config import (
     CATEGORICAL_COLUMNS,
@@ -50,7 +50,7 @@ def build_pipeline(model):
     preprocessor = ColumnTransformer(
         transformers=[
             ("categorical", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_COLUMNS),
-            ("numeric", "passthrough", NUMERIC_COLUMNS),
+            ("numeric", StandardScaler(), NUMERIC_COLUMNS),
         ]
     )
 
