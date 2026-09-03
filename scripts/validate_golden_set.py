@@ -43,17 +43,28 @@ def _values_match(value, expected):
     return False
 
 
+def _flatten_numeric(value):
+    """Extrait recursivement toutes les valeurs numeriques d'un dict/liste imbrique
+    (ex. {"model_type": ..., "test_metrics": {"pr_auc": 0.53, ...}})."""
+    values = []
+    if isinstance(value, (int, float)):
+        values.append(float(value))
+    elif isinstance(value, dict):
+        for v in value.values():
+            values.extend(_flatten_numeric(v))
+    elif isinstance(value, (list, tuple)):
+        for v in value:
+            values.extend(_flatten_numeric(v))
+    return values
+
+
 def _all_numeric_values(artifact):
     values = []
     if artifact is None:
         return values
     kind = artifact.get("result_kind")
     if kind == "scalar":
-        value = artifact.get("result_value")
-        if isinstance(value, dict):
-            values.extend(v for v in value.values() if isinstance(v, (int, float)))
-        elif isinstance(value, (int, float)):
-            values.append(float(value))
+        values.extend(_flatten_numeric(artifact.get("result_value")))
     elif kind in ("dataframe", "series"):
         result_df = artifact.get("result_df")
         if result_df is not None:
