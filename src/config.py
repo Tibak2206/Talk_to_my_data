@@ -3,6 +3,8 @@ from pathlib import Path
 # Chemins
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw" / "credit_card_default.csv"
+MODEL_PATH = PROJECT_ROOT / "models" / "gradient_boosting_model.joblib"
+SCORING_OUTPUT_PATH = PROJECT_ROOT / "data" / "scoring" / "scoring_test.csv"
 
 # Colonnes
 TARGET_COLUMN = "default_payment_next_month"
@@ -74,3 +76,19 @@ EDUCATION_LEVEL_ORDER = {1: 0, 2: 1, 3: 2}
 # Split train/test
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
+
+# Modele final retenu en notebook 03 (Gradient Boosting) : hyperparametres trouves
+# par RandomizedSearchCV (PR-AUC prioritaire, 5-fold CV, n_iter=30 sur le train).
+FINAL_MODEL_PARAMS = {
+    "learning_rate": 0.010243250407033817,
+    "max_depth": 2,
+    "min_samples_leaf": 17,
+    "n_estimators": 268,
+    "subsample": 0.8447411578889518,
+    "random_state": RANDOM_STATE,
+}
+
+# Seuil de decision retenu en notebook 03, section 5 : minimisation d'un cout
+# metier illustratif (R=5, un defaut manque coute ~5x plus qu'une relance
+# inutile). A affiner avec de vrais couts de la direction Recouvrement & Risque.
+DECISION_THRESHOLD = 0.180
