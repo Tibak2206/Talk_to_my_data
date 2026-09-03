@@ -81,6 +81,16 @@ ANTHROPIC_API_KEY=sk-ant-...
 ANTHROPIC_WORKSPACE_ID=wrkspc_...
 ```
 
+### Observabilité (optionnel)
+
+L'agent peut envoyer ses traces (questions, appels d'outil, tokens, coût, latence) vers un dashboard [Langfuse](https://langfuse.com). Sans configuration, l'app fonctionne normalement, juste sans traces. Pour l'activer, ajouter dans `.env` (clés sur `cloud.langfuse.com`, ou `us.cloud.langfuse.com` pour la région US) :
+
+```
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_HOST=https://cloud.langfuse.com
+```
+
 ### Lancer l'app
 
 ```bash

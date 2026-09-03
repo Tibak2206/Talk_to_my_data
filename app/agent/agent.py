@@ -36,6 +36,16 @@ def get_agent():
     return _agent
 
 
+def _get_langfuse_callbacks():
+    """Trace optionnelle vers Langfuse : activee uniquement si LANGFUSE_PUBLIC_KEY
+    est definie dans l'environnement, sinon l'agent fonctionne normalement sans."""
+    if not os.environ.get("LANGFUSE_PUBLIC_KEY"):
+        return []
+    from langfuse.langchain import CallbackHandler
+
+    return [CallbackHandler()]
+
+
 def ask(question, history=None):
     """Pose une question a l'agent.
 
@@ -58,7 +68,7 @@ def ask(question, history=None):
         messages.append(AIMessage(content=turn["answer"]))
     messages.append(HumanMessage(content=question))
 
-    result = agent.invoke({"messages": messages})
+    result = agent.invoke({"messages": messages}, config={"callbacks": _get_langfuse_callbacks()})
     result_messages = result["messages"]
 
     answer = ""
