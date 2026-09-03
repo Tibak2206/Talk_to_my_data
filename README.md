@@ -43,9 +43,7 @@ pip install -r requirements.txt
 
 ## Notebooks (étapes 1 et 2)
 
-Ouvrir les notebooks dans l'ordre (`01` → `02` → `03`) avec Jupyter/VS Code, environnement `venv` sélectionné. Chaque notebook est autonome et documente ses propres décisions (feature engineering, gestion du déséquilibre des classes, choix du seuil, etc.).
-
-> **Limite connue** : les graphiques Plotly interactifs ne s'affichent pas dans la prévisualisation GitHub des notebooks (le HTML/JS est retiré par le sanitizer de GitHub). Ils s'affichent normalement en ouvrant les notebooks localement (Jupyter, VS Code) ou en les exécutant.
+Ouvrir les notebooks dans l'ordre (`01` → `02` → `03`) avec Jupyter/VS Code, environnement `venv` sélectionné. Chaque notebook est autonome et documente ses propres décisions (feature engineering, gestion du déséquilibre des classes, choix du seuil, etc.). Les graphiques sont exportés en PNG statique (`fig.show("png")`, via `kaleido`) pour s'afficher correctement aussi bien en local que dans la prévisualisation GitHub.
 
 ### Réentraîner le modèle / produire un fichier de scoring
 
