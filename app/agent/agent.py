@@ -9,6 +9,13 @@ from app.agent.tools import TOOLS
 from langchain.agents import create_agent
 
 MODEL_NAME = "claude-opus-5"
+# Effort par defaut d'Opus 5 = "high" (thinking adaptatif profond), pense pour du
+# raisonnement complexe. Nos questions sont des lookups pandas simples : "medium"
+# reduit fortement le cout (moins de thinking) avec un impact attendu minime sur
+# la qualite pour ce type de tache (cf. golden set pour validation).
+EFFORT = "medium"
+INPUT_COST_PER_MTOK = 5.0
+OUTPUT_COST_PER_MTOK = 25.0
 
 _agent = None
 
@@ -20,7 +27,11 @@ def get_agent():
         workspace_id = os.environ.get("ANTHROPIC_WORKSPACE_ID")
         if workspace_id:
             default_headers["anthropic-workspace-id"] = workspace_id
-        model = ChatAnthropic(model=MODEL_NAME, default_headers=default_headers or None)
+        model = ChatAnthropic(
+            model=MODEL_NAME,
+            effort=EFFORT,
+            default_headers=default_headers or None,
+        )
         _agent = create_agent(model=model, tools=TOOLS, system_prompt=SYSTEM_PROMPT)
     return _agent
 
@@ -62,8 +73,32 @@ def ask(question, history=None):
             steps.append({"code": msg.artifact.get("code"), "artifact": msg.artifact})
 
     refused = not steps and _contains_refusal_phrase(answer)
+    usage = _aggregate_usage(result_messages)
 
-    return {"answer": answer, "steps": steps, "refused": refused}
+    print(
+        f"[usage] input={usage['input_tokens']} output={usage['output_tokens']} "
+        f"cout_estime=${usage['cost_usd']:.4f} (nb_appels_llm={usage['n_calls']})"
+    )
+
+    return {"answer": answer, "steps": steps, "refused": refused, "usage": usage}
+
+
+def _aggregate_usage(messages):
+    input_tokens = 0
+    output_tokens = 0
+    n_calls = 0
+    for msg in messages:
+        if isinstance(msg, AIMessage) and msg.usage_metadata:
+            input_tokens += msg.usage_metadata.get("input_tokens") or 0
+            output_tokens += msg.usage_metadata.get("output_tokens") or 0
+            n_calls += 1
+    cost_usd = (input_tokens / 1e6) * INPUT_COST_PER_MTOK + (output_tokens / 1e6) * OUTPUT_COST_PER_MTOK
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "n_calls": n_calls,
+        "cost_usd": cost_usd,
+    }
 
 
 def _strip_accents(text):
