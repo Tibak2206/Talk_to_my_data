@@ -10,8 +10,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.agent.agent import ask
-
 st.set_page_config(page_title="Talk to my Data", page_icon="\U0001F4CA")
 st.title("Talk to my Data")
 st.caption(
@@ -55,6 +53,10 @@ question = st.chat_input("Pose une question sur le dataset...")
 if question:
     with st.spinner("Analyse en cours..."):
         try:
+            # Import paresseux : pandas/sklearn/langchain (~8s) ne se chargent qu'a
+            # la premiere question, pas au demarrage de la page.
+            from app.agent.agent import ask
+
             result = ask(question, history=st.session_state.history)
         except Exception as exc:
             st.error(f"Erreur lors de l'appel a l'agent : {exc}")
