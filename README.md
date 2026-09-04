@@ -31,6 +31,9 @@ scripts/
 data/raw/           Dataset brut (CSV)
 data/scoring/        Fichier de scoring produit par infer.py (id, proba_default, label_pred)
 models/               Modèle entraîné sauvegardé (.joblib)
+
+Dockerfile               Image de l'app Streamlit (déploiement Cloud Run)
+requirements-app.txt     Dépendances minimales pour l'image (sous-ensemble de requirements.txt)
 ```
 
 ## Installation
@@ -104,3 +107,21 @@ python -m scripts.validate_golden_set
 ```
 
 Exécute 12 questions de référence (profilage, segmentation, comparaison, informations modèle, refus hors périmètre) et compare chaque résultat à un calcul pandas indépendant. Fait de vrais appels à l'API Anthropic (coût réel, de l'ordre de quelques dizaines de centimes).
+
+## Déploiement (Cloud Run)
+
+L'app est déployée sur Google Cloud Run : **https://talk-to-my-data-217437146645.europe-west1.run.app**
+
+Stack : image Docker (`Dockerfile`, dépendances minimales dans `requirements-app.txt`) poussée vers Artifact Registry, servie par Cloud Run (1 vCPU / 1 Gi RAM, accès public), clés API injectées via Secret Manager (jamais en clair dans l'image).
+
+Pour mettre à jour le déploiement après un changement de code :
+
+```bash
+docker build -t europe-west1-docker.pkg.dev/talk-to-my-data-507612/talk-to-my-data/streamlit-app:latest .
+docker push europe-west1-docker.pkg.dev/talk-to-my-data-507612/talk-to-my-data/streamlit-app:latest
+
+gcloud run deploy talk-to-my-data \
+  --image=europe-west1-docker.pkg.dev/talk-to-my-data-507612/talk-to-my-data/streamlit-app:latest \
+  --region=europe-west1 \
+  --project=talk-to-my-data-507612
+```
